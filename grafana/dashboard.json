@@ -1,0 +1,339 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 21883,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 24,
+              "gradientMode": "hue",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 4,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 5,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": false
+          },
+          "tooltip": {
+            "maxHeight": 600,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(\n    rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n) by (destination_namespace)",
+            "instant": false,
+            "legendFormat": "Received by Server",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Total Traffic between Client and Server",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 12,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 1,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "decbytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 11,
+          "x": 0,
+          "y": 8
+        },
+        "id": 4,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "maxHeight": 600,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "11.0.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(\n    rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n    * on (destination_podname) group_left(destination_node)\n    label_replace(\n        label_replace(kube_pod_info{namespace=\"app-server\", created_by_name=~\"server-(.*)\"}, \"destination_podname\", \"$1\", \"pod\", \"(.*)\"), \"destination_node\", \"$1\", \"node\", \"(.*)\"\n    )\n    * on (destination_node) group_left(destination_zone)\n    label_replace(\n        label_replace(sum by (node, label_topology_kubernetes_io_zone) (kube_node_labels), \"destination_node\", \"$1\", \"node\", \"(.*)\"), \"destination_zone\", \"$1\", \"label_topology_kubernetes_io_zone\", \"(.*)\"\n    )\n) by (destination_zone)",
+            "instant": false,
+            "legendFormat": "__auto",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Traffic Received by Server across AZs",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 12,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 1,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "decbytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 13,
+          "x": 11,
+          "y": 8
+        },
+        "id": 3,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "maxHeight": 600,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "11.0.0",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(\n    ceil(\n        (\n            sum(\n                rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n                * on (source_podname) group_left(source_node)\n                label_replace(\n                    label_replace(kube_pod_info{namespace=\"app-client\", created_by_name=~\"client-(.*)\"}, \"source_podname\", \"$1\", \"pod\", \"(.*)\"), \"source_node\", \"$1\", \"node\", \"(.*)\"\n                )\n                * on (source_node) group_left(zone)\n                label_replace(\n                    label_replace(sum by (node, label_topology_kubernetes_io_zone) (kube_node_labels), \"source_node\", \"$1\", \"node\", \"(.*)\"), \"zone\", \"$1\", \"label_topology_kubernetes_io_zone\", \"(.*)\"\n                )\n            ) by (destination_podname, source_podname, zone)\n        )\n        + on (destination_podname, source_podname, zone) group_left()\n        (\n            sum(\n                rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n                * on (destination_podname) group_left(destination_node)\n                label_replace(\n                    label_replace(kube_pod_info{namespace=\"app-server\", created_by_name=~\"server-(.*)\"}, \"destination_podname\", \"$1\", \"pod\", \"(.*)\"), \"destination_node\", \"$1\", \"node\", \"(.*)\"\n                )\n                * on (destination_node) group_left(zone)\n                label_replace(\n                    label_replace(sum by (node, label_topology_kubernetes_io_zone) (kube_node_labels), \"destination_node\", \"$1\", \"node\", \"(.*)\"), \"zone\", \"$1\", \"label_topology_kubernetes_io_zone\", \"(.*)\"\n                )\n            ) by (destination_podname, source_podname, zone)\n        )\n    ) / 2 # we are divinding because we are summing values in '+on()' function to find the Same AZ traffic\n) OR on() vector(0)",
+            "instant": false,
+            "legendFormat": "Same AZ Traffic",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "sum(\n    rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n)\n-\nsum(\n    ceil(\n        (\n            sum(\n                rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n                * on (source_podname) group_left(source_node)\n                label_replace(\n                    label_replace(kube_pod_info{namespace=\"app-client\", created_by_name=~\"client-(.*)\"}, \"source_podname\", \"$1\", \"pod\", \"(.*)\"), \"source_node\", \"$1\", \"node\", \"(.*)\"\n                )\n                * on (source_node) group_left(zone)\n                label_replace(\n                    label_replace(sum by (node, label_topology_kubernetes_io_zone) (kube_node_labels), \"source_node\", \"$1\", \"node\", \"(.*)\"), \"zone\", \"$1\", \"label_topology_kubernetes_io_zone\", \"(.*)\"\n                )\n            ) by (destination_podname, source_podname, zone)\n        )\n        + on (destination_podname, source_podname, zone) group_left()\n        (\n            sum(\n                rate(networkobservability_adv_forward_bytes{source_namespace=\"app-client\", source_workload_name=~\"client-(.*)\", destination_namespace=\"app-server\", destination_workload_name=~\"server-(.*)\"}[$__rate_interval])\n                * on (destination_podname) group_left(destination_node)\n                label_replace(\n                    label_replace(kube_pod_info{namespace=\"app-server\", created_by_name=~\"server-(.*)\"}, \"destination_podname\", \"$1\", \"pod\", \"(.*)\"), \"destination_node\", \"$1\", \"node\", \"(.*)\"\n                )\n                * on (destination_node) group_left(zone)\n                label_replace(\n                    label_replace(sum by (node, label_topology_kubernetes_io_zone) (kube_node_labels), \"destination_node\", \"$1\", \"node\", \"(.*)\"), \"zone\", \"$1\", \"label_topology_kubernetes_io_zone\", \"(.*)\"\n                )\n            ) by (destination_podname, source_podname, zone)\n        )\n    ) / 2\n)",
+            "hide": false,
+            "instant": false,
+            "legendFormat": "Cross AZ Traffic",
+            "range": true,
+            "refId": "B"
+          }
+        ],
+        "title": "Cross AZ Analysis",
+        "type": "timeseries"
+      }
+    ],
+    "schemaVersion": 39,
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-5m",
+      "to": "now"
+    },
+    "timeRangeUpdatedDuringEditOrView": false,
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Inter-Pod Network Analysis",
+    "uid": "cdvhlw265chdse",
+    "version": 1,
+    "weekStart": ""
+  }
