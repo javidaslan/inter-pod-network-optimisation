@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    retina.sh: observe # Allow retina to observe this namespace
+  name: app-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  namespace: app-server
+  labels:
+    app: server
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - name: server
+          image: <app-server image> #TODO: Use app server image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: FLASK_APP
+              value: "app.py"
+            - name: FLASK_RUN_HOST
+              value: "0.0.0.0"
+            - name: FLASK_RUN_PORT
+              value: "5000"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: app-server
+  #annotations:
+  #  service.kubernetes.io/topology-mode: Auto
+spec:
+  selector:
+    app: server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: ClusterIP
