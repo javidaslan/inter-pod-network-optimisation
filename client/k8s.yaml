@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    retina.sh: observe # allows retina to observe namespace
+  name: app-client
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: app-client
+  labels:
+    app: client
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+        - name: client
+          image: <client-app-image> # TODO: Change to proper image
+          imagePullPolicy: Always
+          env:
+            - name: SERVER
+              value: "http://server.app-server.svc.cluster.local/az"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: client
